@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>강의실 신청 시스템</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">강의실 신청 시스템</h1>
+        <div class="flex items-center space-x-2">
+          <button id="adminToggleBtn" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">관리자 로그인</button>
+          <button id="logoutBtn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 hidden">로그아웃</button>
+        </div>
+      </div>
+
+      <!-- 관리자 로그인 폼 -->
+      <div id="adminLoginForm" class="mb-8 max-w-md mx-auto hidden">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h2 class="text-xl font-bold mb-4 text-center">관리자 로그인</h2>
+          <div class="space-y-4">
+            <input type="text" id="adminId" placeholder="admin" class="w-full px-4 py-2 border border-gray-300 rounded">
+            <input type="password" id="adminPassword" placeholder="비밀번호" class="w-full px-4 py-2 border border-gray-300 rounded">
+            <button id="loginBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">로그인</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관리자 대시보드 -->
+      <div id="adminDashboard" class="hidden">
+        <h2 class="text-2xl font-bold mb-6">관리자 대시보드</h2>
+        <div class="grid grid-cols-8 gap-2 mb-6">
+          <button id="passwordChangeBtn" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">비밀번호 변경</button>
+          <button id="dateManagerBtn" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">날짜 관리</button>
+          <button id="timeSettingsBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">시간 설정</button>
+          <button id="addClassroomBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">강의실 추가</button>
+          <button id="scheduleNotesBtn" class="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700">정기 특이사항</button>
+          <button id="availabilityBtn" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">요일별 신청허용 설정</button>
+          <button id="historyBtn" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">이전 기록</button>
+          <button id="todayBookingsBtn" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">금일 신청현황</button>
+        </div>
+
+        <div id="passwordChangePanel" class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">관리자 비밀번호 변경</h3>
+          <div class="space-y-3">
+            <input type="password" id="currentPassword" placeholder="현재 비밀번호" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <input type="password" id="newPassword" placeholder="새 비밀번호" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <input type="password" id="confirmPassword" placeholder="비밀번호 확인" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <button id="changePasswordBtn" class="w-full px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">변경</button>
+          </div>
+        </div>
+
+        <div id="dateManagerPanel" class="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">특별 허용 날짜 관리</h3>
+          <div class="space-y-3">
+            <input type="date" id="tempDate" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <button id="addDateBtn" class="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">추가/제거</button>
+            <div id="datesContainer" class="mt-3 space-y-2"></div>
+          </div>
+        </div>
+
+        <div id="timeSettingsPanel" class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">신청 시간 설정</h3>
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold mb-2">9교시, 10교시</h4>
+              <label class="block text-sm mb-1">시작 시간</label>
+              <input type="time" id="regularStart" value="12:55" class="w-full px-3 py-2 border rounded mb-3">
+              <label class="block text-sm mb-1">마감 시간</label>
+              <input type="time" id="regularEnd" value="16:35" class="w-full px-3 py-2 border rounded">
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2">저녁1교시, 저녁2교시</h4>
+              <label class="block text-sm mb-1">시작 시간</label>
+              <input type="time" id="eveningStart" value="12:55" class="w-full px-3 py-2 border rounded mb-3">
+              <label class="block text-sm mb-1">마감 시간</label>
+              <input type="time" id="eveningEnd" value="18:55" class="w-full px-3 py-2 border rounded">
+            </div>
+          </div>
+          <button id="saveTimeSettingsBtn" class="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">저장</button>
+        </div>
+
+        <div id="addClassroomPanel" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">강의실 추가</h3>
+          <div class="space-y-3">
+            <input type="text" id="newClassroomName" placeholder="강의실 이름 (예: 301호)" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <button id="addClassroomConfirmBtn" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">추가</button>
+            <div id="classroomList" class="mt-3 space-y-2"></div>
+          </div>
+        </div>
+
+        <div id="scheduleNotesPanel" class="mb-6 p-4 bg-pink-50 border border-pink-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">정기 특이사항 관리</h3>
+          <div class="space-y-3">
+            <select id="noteDay" class="w-full px-3 py-2 border border-gray-300 rounded">
+              <option value="">요일 선택</option>
+              <option value="월">월요일</option>
+              <option value="화">화요일</option>
+              <option value="수">수요일</option>
+              <option value="목">목요일</option>
+            </select>
+            <select id="noteClassroom" class="w-full px-3 py-2 border border-gray-300 rounded">
+              <option value="">강의실 선택</option>
+            </select>
+            <select id="noteTimeSlot" class="w-full px-3 py-2 border border-gray-300 rounded">
+              <option value="">시간 선택</option>
+              <option value="9교시">9교시</option>
+              <option value="10교시">10교시</option>
+              <option value="저녁1교시">저녁1교시</option>
+              <option value="저녁2교시">저녁2교시</option>
+            </select>
+            <input type="text" id="noteContent" placeholder="특이사항 입력 (예: 댄스동아리활동)" class="w-full px-3 py-2 border border-gray-300 rounded">
+            <button id="saveNoteBtn" class="w-full px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700">저장</button>
+            <div id="notesListContainer" class="mt-4 space-y-2"></div>
+          </div>
+        </div>
+
+        <div id="availabilityPanel" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">요일별 신청 허용 설정</h3>
+          <div class="grid grid-cols-3 gap-3 mb-3">
+            <select id="availabilityDay" class="px-3 py-2 border border-gray-300 rounded">
+              <option value="">요일 선택</option>
+              <option value="월">월요일</option>
+              <option value="화">화요일</option>
+              <option value="수">수요일</option>
+              <option value="목">목요일</option>
+              <option value="금">금요일</option>
+              <option value="토">토요일</option>
+              <option value="일">일요일</option>
+            </select>
+            <button id="loadAvailabilityBtn" class="px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">불러오기</button>
+            <button id="saveAvailabilityBtn" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">저장</button>
+          </div>
+          <div id="availabilityGrid" class="overflow-auto"></div>
+          <p class="text-xs text-gray-600 mt-2">체크된 항목만 신청 허용. 체크 해제 시 해당 요일/강의실/시간대 신청 비허용.</p>
+        </div>
+
+        <div id="historyPanel" class="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">이전 기록 조회</h3>
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <select id="historyYear" class="px-3 py-2 border border-gray-300 rounded">
+              <option value="">년도 선택</option>
+            </select>
+            <select id="historyMonth" class="px-3 py-2 border border-gray-300 rounded">
+              <option value="">월 선택</option>
+              <option value="1">1월</option>
+              <option value="2">2월</option>
+              <option value="3">3월</option>
+              <option value="4">4월</option>
+              <option value="5">5월</option>
+              <option value="6">6월</option>
+              <option value="7">7월</option>
+              <option value="8">8월</option>
+              <option value="9">9월</option>
+              <option value="10">10월</option>
+              <option value="11">11월</option>
+              <option value="12">12월</option>
+            </select>
+            <select id="historyDay" class="px-3 py-2 border border-gray-300 rounded">
+              <option value="">일 선택</option>
+            </select>
+          </div>
+          <button id="viewHistoryBtn" class="w-full px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 mb-4">조회</button>
+          <div id="historyResultContainer" class="space-y-3"></div>
+        </div>
+
+        <div id="todayBookingsPanel" class="mb-6 p-4 bg-white border border-gray-200 rounded-lg hidden">
+          <h3 class="text-lg font-bold mb-4">금일 강의실 신청 현황 (관리자)</h3>
+          <div id="todayBookingsList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+      </div>
+
+      <!-- 사용자 뷰 -->
+      <div id="userView">
+        <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 class="text-lg font-bold text-yellow-800 mb-2">중요: 당일 신청만 가능</h3>
+          <p class="text-yellow-700">강의실 신청은 당일에만 가능합니다. 하루에 1개 시간대만 신청 가능합니다.</p>
+          <p class="text-yellow-700 mt-1">※ 목요일만 일반 시간대 1개 + 저녁2교시 추가 신청 가능; 도서관은 저녁1/2 둘 다 예외 허용</p>
+        </div>
+
+        <div class="mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded">←</button>
+            <h2 id="calendarTitle" class="text-xl font-bold"></h2>
+            <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded">→</button>
+          </div>
+          <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+        </div>
+
+        <div class="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">이름</label>
+            <input type="text" id="userName" placeholder="예: 7최별무리"
+                   class="w-full px-4 py-2 border border-gray-300 rounded"
+                   maxlength="5" pattern="^[0-9][가-힣]{2,4}$"
+                   title="앞에 숫자 1자리 + 한글 2~4글자, 공백 금지 (예: 7최별무리)">
+            <p id="nameHint" class="text-xs text-gray-500 mt-1">형식: 숫자 1자리 + 한글 2~4글자, 공백 금지 (예: 7최별무리)</p>
+            <p id="nameError" class="text-sm text-red-600 mt-1 hidden"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">비밀번호</label>
+            <input type="password" id="userPassword" placeholder="비밀번호" class="w-full px-4 py-2 border border-gray-300 rounded">
+          </div>
+        </div>
+
+        <div id="classroomSection" class="hidden">
+          <h2 id="selectedDateTitle" class="text-xl font-bold mb-4">강의실 현황</h2>
+          <div id="classroomDisplayList" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCeQg-kbISpjOoemukDYIHgegGuNPFYJb0",
+      authDomain: "classroom-booking-2c9d0.firebaseapp.com",
+      databaseURL: "https://classroom-booking-2c9d0-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "classroom-booking-2c9d0",
+      storageBucket: "classroom-booking-2c9d0.firebasestorage.app",
+      messagingSenderId: "351700978175",
+      appId: "1:351700978175:web:0120576538bc3e461ebfca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // 상태
+    let currentDate = new Date();
+    function normalizeCurrentDate() {
+      if (!currentDate || isNaN(currentDate.getTime())) currentDate = new Date();
+      const y = currentDate.getFullYear();
+      if (y < 1900 || y > 2100) currentDate = new Date();
+    }
+    normalizeCurrentDate();
+
+    let selectedDate = null;
+    let bookings = {};
+    let isAdminLoggedIn = false;
+    let classrooms = ["101호","102호","103호","201호","202호","203호","강당","도서관","미술실","별관1","음악실","별관2"];
+    let allowedDates = new Set();
+    let adminPassword = '1234';
+    let bookingTimes = { regularStart:"12:55", regularEnd:"16:35", eveningStart:"12:55", eveningEnd:"18:55" };
+    let scheduleNotes = {};
+    let weeklyAvailability = {};
+
+    const timeSlots = ['9교시','10교시','저녁1교시','저녁2교시'];
+    const weekdays = ['일','월','화','수','목','금','토'];
+    const generalSlots = ['9교시','10교시'];
+
+    function getDateKey(date) { if(!(date instanceof Date)) date = new Date(date); return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
+    function getDayOfWeek(date) { if(!(date instanceof Date)) date = new Date(date); return weekdays[date.getDay()]; }
+
+    function setupFirebaseListeners() {
+      try {
+        onValue(ref(database,'bookings'), (snap) => { bookings = snap.val() || {}; if (selectedDate) safeRender(renderClassrooms); if (isAdminLoggedIn) safeRender(renderTodayBookings); });
+        onValue(ref(database,'classrooms'), (snap) => {
+          const v = snap.val();
+          if (v && Array.isArray(v) && v.length>0) { classrooms = v; updateClassroomSelects(); safeRender(renderCalendar); if (selectedDate) safeRender(renderClassrooms); if (isAdminLoggedIn) { safeRender(renderClassroomList); safeRender(renderTodayBookings); } }
+        });
+        onValue(ref(database,'allowedDates'), (snap) => { const d=snap.val(); if (d) allowedDates = new Set(Array.isArray(d)?d:Object.values(d)); else allowedDates=new Set(); safeRender(renderCalendar); if (isAdminLoggedIn) safeRender(renderAllowedDatesList); });
+        onValue(ref(database,'adminPassword'), (snap) => { if (snap.val()) adminPassword = snap.val(); });
+        onValue(ref(database,'bookingTimes'), (snap) => { if (snap.val()) bookingTimes = snap.val(); });
+        onValue(ref(database,'scheduleNotes'), (snap) => { scheduleNotes = snap.val() || {}; if (selectedDate) safeRender(renderClassrooms); if (isAdminLoggedIn) safeRender(renderScheduleNotesList); });
+        onValue(ref(database,'weeklyAvailability'), (snap) => { weeklyAvailability = snap.val() || {}; safeRender(renderCalendar); if (selectedDate) safeRender(renderClassrooms); });
+      } catch (e) {
+        console.error('setupFirebaseListeners 실패:', e);
+      }
+    }
+
+    async function saveToFirebase(path,data){ try{ await set(ref(database,path),data); } catch(e){ console.error(e); try{ alert('저장 오류'); }catch{} } }
+
+    async function loadFromFirebase(){
+      try{
+        const snap = await get(ref(database));
+        if (snap && snap.exists()){
+          const data = snap.val();
+          bookings = data.bookings || {};
+          classrooms = Array.isArray(data.classrooms) && data.classrooms.length>0 ? data.classrooms : Array.from(classrooms);
+          const allowedDatesData = data.allowedDates;
+          if (allowedDatesData) {
+            if (Array.isArray(allowedDatesData)) allowedDates = new Set(allowedDatesData);
+            else if (typeof allowedDatesData === 'object') allowedDates = new Set(Object.values(allowedDatesData));
+          }
+          adminPassword = data.adminPassword || adminPassword;
+          bookingTimes = data.bookingTimes || bookingTimes;
+          scheduleNotes = data.scheduleNotes || {};
+          weeklyAvailability = data.weeklyAvailability || {};
+        } else {
+          await initSampleData();
+        }
+      } catch(e){
+        console.error('loadFromFirebase 오류:', e);
+        bookings = bookings || {};
+        classrooms = Array.isArray(classrooms) && classrooms.length>0 ? classrooms : Array.from(classrooms);
+        allowedDates = allowedDates || new Set();
+        scheduleNotes = scheduleNotes || {};
+        weeklyAvailability = weeklyAvailability || {};
+        try { await initSampleData(); } catch(inner){ console.warn('initSampleData 실패:', inner); }
+      }
+    }
+
+    async function initSampleData(){
+      try {
+        await saveToFirebase('bookings',bookings || {});
+        await saveToFirebase('classrooms',classrooms || ["101호","102호","103호","201호","202호","203호","강당","도서관","미술실","별관1","음악실","별관2"]);
+        await saveToFirebase('adminPassword',adminPassword);
+        await saveToFirebase('bookingTimes',bookingTimes);
+        await saveToFirebase('weeklyAvailability',weeklyAvailability);
+      } catch(e){ console.error('initSampleData 저장 실패:', e); }
+    }
+
+    function isWeeklyAllowed(dayOfWeek,classroom,timeSlot) {
+      if (!weeklyAvailability || !weeklyAvailability[dayOfWeek]) return false;
+      const roomMap = weeklyAvailability[dayOfWeek][classroom];
+      if (!roomMap) return false;
+      return !!roomMap[timeSlot];
+    }
+
+    function canAttemptBookingFor(date,classroom,timeSlot){
+      if (!date) return false;
+      const dateKey = getDateKey(date); const todayKey = getDateKey(new Date());
+      if (dateKey !== todayKey) return false;
+      if (!isWithinBookingTime(timeSlot)) return false;
+      const dayOfWeek = getDayOfWeek(date);
+      const availabilityForDay = weeklyAvailability[dayOfWeek];
+      if (availabilityForDay && Object.keys(availabilityForDay).length>0) return isWeeklyAllowed(dayOfWeek,classroom,timeSlot);
+      else { const idx = ['일','월','화','수','목','금','토'].indexOf(dayOfWeek); return idx>=1 && idx<=4; }
+    }
+
+    function isWithinBookingTime(timeSlot){
+      const now = new Date(); const current = now.getHours()*60 + now.getMinutes();
+      let start,end;
+      if (timeSlot==='9교시' || timeSlot==='10교시'){ const [sh,sm] = bookingTimes.regularStart.split(':').map(Number); const [eh,em] = bookingTimes.regularEnd.split(':').map(Number); start=sh*60+sm; end=eh*60+em; }
+      else { const [sh,sm] = bookingTimes.eveningStart.split(':').map(Number); const [eh,em] = bookingTimes.eveningEnd.split(':').map(Number); start=sh*60+sm; end=eh*60+em; }
+      return current>=start && current<=end;
+    }
+
+    function allowBookingFor(userName, date, room, timeslot){
+      if (!userName) return { allowed:false, reason:'이름 필요' };
+      if (!date || !room || !timeslot) return { allowed:false, reason:'잘못된 파라미터' };
+      if (!(date instanceof Date)) date = new Date(date);
+      if (typeof canAttemptBookingFor === 'function'){
+        if (!canAttemptBookingFor(date, room, timeslot)) return { allowed:false, reason:'신청 불가(시간/날짜 또는 관리자 설정)' };
+      }
+      const dateKey = getDateKey(date);
+      const allBooked = [];
+      Object.keys(bookings || {}).forEach(k=>{
+        if (!k.startsWith(dateKey)) return;
+        const parts = k.split('-');
+        const keyTime = parts[parts.length-1] || '';
+        const keyRoom = parts.slice(3, parts.length-1).join('-') || parts[3] || '';
+        let list = bookings[k] || [];
+        if (!Array.isArray(list)) list = Object.values(list).filter(b=>b&&b.name);
+        else list = list.filter(b=>b&&b.name);
+        list.forEach(b=>{ if (b && b.name) allBooked.push({ room: keyRoom, slot: keyTime, name: b.name }); });
+      });
+      const myBookings = allBooked.filter(b => b.name === userName);
+      if (myBookings.some(b => b.slot === timeslot)) return { allowed:false, reason:'동일 시간대 이미 신청됨' };
+      const hasGeneral = myBookings.some(b => generalSlots.includes(b.slot));
+      const hasEvening1 = myBookings.some(b => b.slot === '저녁1교시');
+      const hasEvening2 = myBookings.some(b => b.slot === '저녁2교시');
+      const dow = getDayOfWeek(date);
+      if (dow === '목'){
+        if (timeslot === '저녁2교시'){
+          if (room === '도서관'){
+            const otherBooked = allBooked.some(b => b.slot === '저녁2교시' && b.room === '강당');
+            if (otherBooked) return { allowed:false, reason:'이미 강당에 저녁2교시 신청됨 (상호배타)' };
+            return { allowed:true, reason:'' };
+          } else if (room === '강당'){
+            const otherBooked = allBooked.some(b => b.slot === '저녁2교시' && b.room === '도서관');
+            if (otherBooked) return { allowed:false, reason:'이미 도서관에 저녁2교시 신청됨 (상호배타)' };
+            return { allowed:true, reason:'' };
+          } else {
+            if (hasGeneral || hasEvening1) return { allowed:false, reason:'목요일 저녁2는 도서관/강당만 허용' };
+            return { allowed:false, reason:'목요일 저녁2는 도서관/강당만 허용' };
+          }
+        }
+        if (timeslot === '저녁1교시'){
+          if (room === '도서관') return { allowed:true, reason:'' };
+          if (hasGeneral) return { allowed:false, reason:'이미 일반 시간대 신청, 도서관만 저녁1 예외 허용' };
+          return { allowed:true, reason:'' };
+        }
+        if (generalSlots.includes(timeslot)){
+          if (myBookings.length > 0) return { allowed:false, reason:`이미 ${myBookings[0].room} ${myBookings[0].slot} 신청됨(하루 1건)` };
+          return { allowed:true, reason:'' };
+        }
+      } else {
+        if (myBookings.length > 0) return { allowed:false, reason:`이미 ${myBookings[0].room} ${myBookings[0].slot} 신청됨(하루 1건)` };
+        return { allowed:true, reason:'' };
+      }
+      return { allowed:true, reason:'' };
+    }
+
+    function renderCalendar() {
+      try {
+        normalizeCurrentDate();
+        const calendarEl = document.getElementById('calendar');
+        const titleEl = document.getElementById('calendarTitle');
+        const today = new Date();
+        titleEl.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
+        calendarEl.innerHTML = '';
+
+        ['일','월','화','수','목','금','토'].forEach(d => {
+          const dayEl = document.createElement('div');
+          dayEl.className = 'text-center font-bold p-2 bg-gray-100';
+          dayEl.textContent = d;
+          calendarEl.appendChild(dayEl);
+        });
+
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+        const lastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) {
+          const emptyEl = document.createElement('div');
+          emptyEl.className = 'p-2';
+          calendarEl.appendChild(emptyEl);
+        }
+
+        for (let date = 1; date <= lastDate; date++) {
+          const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), date);
+          const dateKey = getDateKey(dateObj);
+          const isSpecialDate = allowedDates.has(dateKey);
+
+          let isValid = false;
+          const dayIdx = dateObj.getDay();
+          const dayName = getDayOfWeek(dateObj);
+          const availForDay = weeklyAvailability[dayName];
+          if (getDateKey(dateObj) === getDateKey(new Date())) {
+            isValid = true;
+          } else if (availForDay && Object.keys(availForDay).length > 0) {
+            const anyAllowed = Object.keys(availForDay).some(room => {
+              const roomMap = availForDay[room] || {};
+              return timeSlots.some(ts => !!roomMap[ts]);
+            });
+            if (anyAllowed) isValid = true;
+          } else if (dayIdx >= 1 && dayIdx <= 4) {
+            isValid = true;
+          }
+
+          const isToday = getDateKey(dateObj) === getDateKey(today);
+          const isSelected = selectedDate && getDateKey(dateObj) === getDateKey(selectedDate);
+
+          const dateBtn = document.createElement('button');
+          dateBtn.textContent = date;
+          dateBtn.disabled = !isValid;
+
+          let className = 'p-2 text-center rounded ';
+          if (isSelected) className += 'bg-blue-500 text-white ';
+          else if (isToday) className += 'bg-blue-100 font-bold ';
+          else if (isSpecialDate) className += 'bg-purple-100 text-purple-700 ';
+          else if (isValid) className += 'bg-white hover:bg-blue-100 cursor-pointer ';
+          else className += 'text-gray-400 cursor-not-allowed ';
+
+          if (isSpecialDate) {
+            dateBtn.title = '특별 허용일 (관리자 지정) — 실제 신청은 당일에만 가능합니다';
+          }
+
+          dateBtn.className = className;
+
+          if (isValid) {
+            dateBtn.addEventListener('click', () => {
+              selectedDate = new Date(dateObj);
+              renderCalendar();
+              safeRender(renderClassrooms);
+            });
+          }
+
+          calendarEl.appendChild(dateBtn);
+        }
+      } catch(e){
+        console.error('renderCalendar 예외:', e);
+      }
+    }
+
+    function safeRender(fn){
+      try { if (typeof fn === 'function') fn(); } catch(e){ console.error('safeRender 예외:', e); }
+    }
+
+    // 관리자 삭제 함수 (기존)
+    window.adminDeleteBookingByIndex = async function(dateKey, classroom, timeSlot, index){
+      if (!confirm('이 신청을 삭제하시겠습니까?')) return;
+      const key = `${dateKey}-${classroom}-${timeSlot}`;
+      let bookingList = bookings[key] || [];
+      if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList).filter(b=>b&&b.name); else bookingList = bookingList.filter(b=>b&&b.name);
+      if (index >= bookingList.length) { alert('신청 내역을 찾을 수 없습니다.'); return; }
+      bookingList.splice(index,1);
+      if (bookingList.length===0) delete bookings[key]; else bookings[key]=bookingList;
+      await saveToFirebase('bookings', bookings);
+      alert('삭제되었습니다.');
+      if (selectedDate) safeRender(renderClassrooms);
+      if (isAdminLoggedIn) safeRender(renderTodayBookings);
+    };
+
+    // attemptDeleteBooking: 관리자면 즉시 삭제, 일반 사용자는 비밀번호 확인 후 삭제
+    window.attemptDeleteBooking = async function(dateKey, classroom, timeSlot, index){
+      const key = `${dateKey}-${classroom}-${timeSlot}`;
+      let bookingList = bookings[key] || [];
+      if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList).filter(b=>b&&b.name);
+      if (index >= bookingList.length || !bookingList[index]) { alert('신청 내역을 찾을 수 없습니다.'); return; }
+
+      if (isAdminLoggedIn) {
+        if (!confirm('관리자 권한으로 이 신청을 삭제하시겠습니까?')) return;
+        bookingList.splice(index,1);
+        if (bookingList.length===0) delete bookings[key]; else bookings[key]=bookingList;
+        try { await saveToFirebase('bookings', bookings); alert('삭제되었습니다.'); if (selectedDate) safeRender(renderClassrooms); if (isAdminLoggedIn) renderTodayBookings(); } catch(e){ console.error(e); alert('삭제 중 오류가 발생했습니다.'); }
+        return;
+      }
+
+      const inputPwd = prompt('예약 삭제를 위해 비밀번호를 입력하세요:');
+      if (inputPwd === null) return;
+      const target = bookingList[index];
+      if (!target || typeof target.password === 'undefined') { alert('이 예약은 비밀번호로 삭제할 수 없습니다. 관리자에게 문의하세요.'); return; }
+      if (inputPwd !== target.password) { alert('비밀번호가 일치하지 않습니다.'); return; }
+
+      if (!confirm('정말로 삭제하시겠습니까?')) return;
+      bookingList.splice(index,1);
+      if (bookingList.length===0) delete bookings[key]; else bookings[key]=bookingList;
+      try { await saveToFirebase('bookings', bookings); alert('삭제되었습니다.'); if (selectedDate) safeRender(renderClassrooms); } catch(e){ console.error(e); alert('삭제 중 오류가 발생했습니다.'); }
+    };
+
+    function renderClassrooms(){
+      try {
+        if (!Array.isArray(classrooms) || classrooms.length === 0) { console.warn('classrooms missing — applying fallback'); classrooms = Array.from(["101호","102호","103호","201호","202호","203호","강당","도서관","미술실","별관1","음악실","별관2"]); updateClassroomSelects(); safeRender(renderCalendar); if (selectedDate) safeRender(renderClassrooms); if (isAdminLoggedIn) { safeRender(renderClassroomList); safeRender(renderTodayBookings); } }
+
+        const section = document.getElementById('classroomSection'); const list = document.getElementById('classroomDisplayList');
+        if (!list || !section) return;
+        if (!selectedDate){ section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+        const dateKey = getDateKey(selectedDate); const dayOfWeek = getDayOfWeek(selectedDate);
+        document.getElementById('selectedDateTitle').textContent = `${dateKey} 강의실 현황`;
+        const userName = (document.getElementById('userName') && document.getElementById('userName').value) ? document.getElementById('userName').value.trim() : '';
+        list.innerHTML='';
+
+        // 사용자가 이미 신청한 슬롯 수집 (안전)
+        let bookedSlots = [];
+        if (userName){
+          for (let room of classrooms){
+            for (let slot of timeSlots){
+              const ck = `${dateKey}-${room}-${slot}`;
+              let arr = bookings[ck] || [];
+              if (!Array.isArray(arr)) arr = Array.isArray(Object.values(arr)) ? Object.values(arr).filter(b=>b&&b.name) : [];
+              else arr = arr.filter(b=>b&&b.name);
+              if (arr.some(b=>b.name===userName)) bookedSlots.push({slot, room});
+            }
+          }
+        }
+
+        classrooms.forEach(classroom=>{
+          const card=document.createElement('div'); card.className='bg-white border rounded-lg p-6 shadow';
+          let html=`<h3 class="text-lg font-bold mb-4">${classroom}</h3><div class="space-y-3">`;
+          timeSlots.forEach(timeSlot=>{
+            const key=`${dateKey}-${classroom}-${timeSlot}`; let bookingList = (bookings && bookings[key]) ? bookings[key] : []; if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList||{}).filter(b=>b&&b.name); else bookingList = bookingList.filter(b=>b&&b.name);
+            const isBooked = bookingList.some(b=>b.name===userName); const count = bookingList.length;
+            const scheduleNote = scheduleNotes[`${dayOfWeek}-${classroom}-${timeSlot}`] || '';
+
+            // UI 보조 차단 판정 (기존 로직 유지)
+            let cannotBook = false;
+            let blockedReason = '';
+
+            if (bookedSlots.some(b => b.slot === timeSlot)) {
+              cannotBook = true;
+              const inf = bookedSlots.find(b => b.slot === timeSlot);
+              blockedReason = `${inf.room} ${inf.slot} 신청됨`;
+            } else {
+              if (dayOfWeek === '목') {
+                const hasGeneral = bookedSlots.some(b => generalSlots.includes(b.slot));
+                if (timeSlot === '저녁1교시') {
+                  if (classroom === '도서관') {
+                    cannotBook = false;
+                  } else if (hasGeneral) {
+                    cannotBook = true;
+                    const inf = bookedSlots.find(b => generalSlots.includes(b.slot));
+                    blockedReason = `${inf.room} ${inf.slot} 신청됨`;
+                  }
+                } else if (timeSlot === '저녁2교시') {
+                  if (classroom === '도서관') {
+                    const alreadyHallEvening2 = bookedSlots.some(b => b.slot === '저녁2교시' && b.room === '강당');
+                    if (alreadyHallEvening2) { cannotBook = true; blockedReason = '이미 강당에 저녁2교시 신청됨 (강당과 도서관 저녁2는 중복 불가)'; } else cannotBook = false;
+                  } else if (classroom === '강당') {
+                    const alreadyLibEvening2 = bookedSlots.some(b => b.slot === '저녁2교시' && b.room === '도서관');
+                    if (alreadyLibEvening2) { cannotBook = true; blockedReason = '이미 도서관에 저녁2교시 신청됨 (강당과 도서관 저녁2는 중복 불가)'; } else cannotBook = false;
+                  } else {
+                    if (hasGeneral) { cannotBook = true; const inf = bookedSlots.find(b => generalSlots.includes(b.slot)); blockedReason = `${inf.room} ${inf.slot} 신청됨`; }
+                  }
+                } else {
+                  if (bookedSlots.length > 0) {
+                    const inf = bookedSlots.find(b => true);
+                    cannotBook = true;
+                    blockedReason = `${inf.room} ${inf.slot} 신청됨`;
+                  }
+                }
+              } else {
+                if (bookedSlots.length > 0) {
+                  cannotBook = true;
+                  const inf = bookedSlots[0];
+                  blockedReason = `${inf.room} ${inf.slot} 신청됨`;
+                }
+              }
+            }
+
+            html += `<div class="border-b pb-3"><div class="flex justify-between items-center mb-2"><span class="font-medium">${timeSlot}</span><span class="text-sm bg-gray-100 px-2 py-1 rounded">${count}명</span></div>`;
+            if (scheduleNote) html += `<div class="mb-2 text-sm bg-pink-50 text-pink-700 px-3 py-2 rounded border border-pink-200">📌 ${scheduleNote}</div>`;
+
+            const res = (typeof allowBookingFor === 'function') ? allowBookingFor(userName || '', selectedDate, classroom, timeSlot) : { allowed:false, reason:'서버 미연결' };
+            const canBookGlobal = !!(res && res.allowed);
+            let reason = res && res.reason ? res.reason : '';
+
+            // 기존에는 여기서 '취소' 또는 시간대 옆 '삭제' 버튼을 노출했지만 요청에 따라 제거합니다.
+            // 신청/비활성화 버튼 동작은 그대로 유지됩니다.
+
+            if (!isBooked && !cannotBook && canBookGlobal){
+              html += `<button onclick="window.bookClassroom('${classroom}','${timeSlot}')" class="px-3 py-1 bg-blue-500 text-white text-sm rounded ml-2">신청</button>`;
+            } else if (!isBooked && cannotBook) {
+              html += `<button disabled class="px-3 py-1 bg-gray-300 text-gray-500 text-sm rounded ml-2" title="${blockedReason}">${blockedReason || '신청 불가'}</button>`;
+            } else if (!isBooked && !canBookGlobal) {
+              html += `<button disabled class="px-3 py-1 bg-gray-300 text-gray-500 text-sm rounded ml-2" title="${reason}">${reason || '신청 불가'}</button>`;
+            }
+
+            if (count>0){
+              html += `<div class="mt-2 space-y-1">`;
+              bookingList.forEach((b,idx)=>{
+                // 예약자 각각 옆에 개별 삭제 버튼만 유지 (요청에 따른 변경점)
+                html += `<div class="text-sm bg-blue-50 p-2 rounded flex justify-between items-center"><div><span class="font-medium">${b.name}</span><span class="text-gray-500 text-xs ml-2">${new Date(b.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</span></div><div><button onclick="window.attemptDeleteBooking('${getDateKey(selectedDate)}','${classroom}','${timeSlot}', ${idx})" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">삭제</button></div></div>`;
+              });
+              html += `</div>`;
+            }
+
+            html += `</div>`;
+          });
+          html += `</div>`;
+          card.innerHTML = html;
+          list.appendChild(card);
+        });
+      } catch(e){
+        console.error('renderClassrooms 예외:', e);
+      }
+    }
+
+    function renderTodayBookings(){
+      try {
+        const container = document.getElementById('todayBookingsList');
+        const panel = document.getElementById('todayBookingsPanel');
+        if (!container || !panel) return;
+        panel.classList.remove('hidden');
+        container.innerHTML = '';
+        const todayKey = getDateKey(new Date());
+        classrooms.forEach(classroom=>{
+          const card = document.createElement('div'); card.className='bg-white border rounded-lg p-4';
+          let html = `<h3 class="font-bold mb-3">${classroom}</h3>`;
+          timeSlots.forEach(timeSlot=>{
+            const key = `${todayKey}-${classroom}-${timeSlot}`;
+            let bookingList = bookings[key] || [];
+            if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList).filter(b=>b&&b.name); else bookingList = bookingList.filter(b=>b&&b.name);
+            const cnt = bookingList.length;
+            const scheduleNote = scheduleNotes[`${getDayOfWeek(new Date())}-${classroom}-${timeSlot}`] || '';
+            html += `<div class="mb-3 pb-3 border-b last:border-b-0"><div class="flex justify-between items-center mb-2"><span class="text-sm font-medium">${timeSlot}</span><span class="text-xs bg-gray-100 px-2 py-1 rounded">${cnt}명</span></div>`;
+            if (scheduleNote) html += `<div class="mb-2 text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded">📌 ${scheduleNote}</div>`;
+            if (cnt>0){
+              html += `<div class="space-y-1">`;
+              bookingList.forEach((b,idx)=>{
+                const time = new Date(b.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+                html += `<div class="bg-gray-50 p-2 rounded flex justify-between items-center"><div class="text-sm"><span class="font-medium">${b.name}</span><span class="text-gray-500 text-xs ml-2">${time}</span></div><button onclick="window.attemptDeleteBooking('${todayKey}','${classroom}','${timeSlot}', ${idx})" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">삭제</button></div>`;
+              });
+              html += `</div>`;
+            } else {
+              html += `<div class="text-xs text-gray-400 text-center py-1">신청자 없음</div>`;
+            }
+            html += `</div>`;
+          });
+          card.innerHTML = html; container.appendChild(card);
+        });
+      } catch(e){ console.error('renderTodayBookings 예외:', e); }
+    }
+
+    window.cancelBookingByIndex = async function(classroom,timeSlot,index){
+      try {
+        const password = prompt('비밀번호를 입력하세요:'); if (!password) return; if (!selectedDate) return;
+        const dateKey = getDateKey(selectedDate); const key = `${dateKey}-${classroom}-${timeSlot}`;
+        let bookingList = bookings[key] || []; if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList).filter(b=>b&&b.name); else bookingList = bookingList.filter(b=>b&&b.name);
+        if (index >= bookingList.length || !bookingList[index]) { alert('신청 내역을 찾을 수 없습니다.'); return; }
+        if (bookingList[index].password !== password) { alert('비밀번호가 일치하지 않습니다.'); return; }
+        bookingList.splice(index,1); if (bookingList.length===0) delete bookings[key]; else bookings[key]=bookingList; await saveToFirebase('bookings', bookings); alert('취소되었습니다.'); if (selectedDate) safeRender(renderClassrooms);
+      } catch(e){ console.error('cancelBookingByIndex 예외:', e); alert('취소 중 오류가 발생했습니다.'); }
+    };
+
+    function renderClassroomList(){
+      try {
+        const list = document.getElementById('classroomList'); if (!list) return; list.innerHTML='';
+        classrooms.forEach((room,idx)=>{ const el=document.createElement('div'); el.className='flex justify-between items-center bg-gray-100 p-2 rounded'; el.innerHTML=`<span>${room}</span><button onclick="window.deleteClassroom(${idx})" class="px-2 py-1 bg-red-500 text-white text-sm rounded">삭제</button>`; list.appendChild(el); });
+      } catch(e){ console.error('renderClassroomList 예외:', e); }
+    }
+
+    function renderAllowedDatesList(){ try {
+      const container=document.getElementById('datesContainer'); if (!container) return; container.innerHTML=''; Array.from(allowedDates).sort().forEach(dateKey=>{ const el=document.createElement('div'); el.className='flex justify-between items-center bg-purple-100 p-2 rounded'; el.innerHTML=`<span>${dateKey}</span><button onclick="window.removeAllowedDate('${dateKey}')" class="px-2 py-1 bg-red-500 text-white text-sm rounded">제거</button>`; container.appendChild(el); });
+    } catch(e){ console.error('renderAllowedDatesList 예외:', e); } }
+
+    function renderScheduleNotesList() {
+      try {
+        const container = document.getElementById('notesListContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!scheduleNotes || Object.keys(scheduleNotes).length === 0) {
+          container.innerHTML = '<div class="text-sm text-gray-500 text-center py-2">등록된 특이사항이 없습니다.</div>';
+          return;
+        }
+        Object.keys(scheduleNotes).forEach(key => {
+          const parts = key.split('-');
+          const day = parts[0] || '';
+          const classroom = parts[1] || '';
+          const timeSlot = parts[2] || '';
+          const el = document.createElement('div');
+          el.className = 'flex justify-between items-center bg-pink-100 p-2 rounded';
+          el.innerHTML = `<div class="text-sm"><span class="font-medium">${day}요일 ${classroom} ${timeSlot}</span><span class="ml-2 text-gray-600">${scheduleNotes[key]}</span></div>
+                          <button onclick="window.deleteScheduleNote('${key}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">삭제</button>`;
+          container.appendChild(el);
+        });
+      } catch(e){ console.error('renderScheduleNotesList 예외:', e); }
+    }
+
+    function renderAvailabilityGrid(){
+      try {
+        const day = document.getElementById('availabilityDay').value; const container = document.getElementById('availabilityGrid');
+        container.innerHTML=''; if (!day){ container.innerHTML='<div class="text-sm text-gray-500">요일을 선택하세요.</div>'; return; } if (!weeklyAvailability[day]) weeklyAvailability[day]={};
+        const table=document.createElement('table'); table.className='min-w-full bg-white border'; const thead=document.createElement('thead'); const headRow=document.createElement('tr'); headRow.className='bg-gray-100'; headRow.innerHTML='<th class="p-2 border text-left">강의실 \\ 시간대</th>'; timeSlots.forEach(ts=>{ const th=document.createElement('th'); th.className='p-2 border text-center'; th.textContent=ts; headRow.appendChild(th); }); thead.appendChild(headRow); table.appendChild(thead); const tbody=document.createElement('tbody');
+        classrooms.forEach(room=>{ if (!weeklyAvailability[day][room]) weeklyAvailability[day][room]={}; const row=document.createElement('tr'); const tdRoom=document.createElement('td'); tdRoom.className='p-2 border'; tdRoom.textContent=room; row.appendChild(tdRoom); timeSlots.forEach(ts=>{ const td=document.createElement('td'); td.className='p-2 border text-center'; const chk=document.createElement('input'); chk.type='checkbox'; chk.dataset.room=room; chk.dataset.timeslot=ts; chk.checked = !!(weeklyAvailability[day] && weeklyAvailability[day][room] && weeklyAvailability[day][room][ts]); td.appendChild(chk); row.appendChild(td); }); tbody.appendChild(row); });
+        table.appendChild(tbody); container.appendChild(table);
+      } catch(e){ console.error('renderAvailabilityGrid 예외:', e); }
+    }
+
+    async function saveWeeklyAvailabilityFromGrid(){ try {
+      const day = document.getElementById('availabilityDay').value; if (!day){ alert('요일을 선택하세요.'); return; } const container = document.getElementById('availabilityGrid'); const checks = container.querySelectorAll('input[type="checkbox"]'); if (!weeklyAvailability[day]) weeklyAvailability[day]={}; checks.forEach(chk=>{ const room=chk.dataset.room; const ts=chk.dataset.timeslot; if (!weeklyAvailability[day][room]) weeklyAvailability[day][room]={}; weeklyAvailability[day][room][ts] = !!chk.checked; }); await saveToFirebase('weeklyAvailability', weeklyAvailability); alert(`${day} 요일 신청 허용 설정이 저장되었습니다.`); renderCalendar(); if (selectedDate) renderClassrooms();
+    } catch(e){ console.error('saveWeeklyAvailabilityFromGrid 예외:', e); alert('저장 중 오류가 발생했습니다.'); } }
+
+    function updateClassroomSelects(){ try {
+      const sel=document.getElementById('noteClassroom'); if (!sel) return; sel.innerHTML='<option value="">강의실 선택</option>'; classrooms.forEach(c=>{ const opt=document.createElement('option'); opt.value=c; opt.textContent=c; sel.appendChild(opt); });
+    } catch(e){ console.error('updateClassroomSelects 예외:', e); } }
+
+    function initializeYearSelect(){ try {
+      const select=document.getElementById('historyYear'); if (!select) return; const cy=new Date().getFullYear(); select.innerHTML='<option value="">년도 선택</option>'; for(let y=cy;y>=cy-5;y--){ const opt=document.createElement('option'); opt.value=y; opt.textContent=`${y}년`; select.appendChild(opt); }
+    } catch(e){ console.error('initializeYearSelect 예외:', e); } }
+
+    function validateUserNameFormat(name){ const re=/^[0-9][가-힣]{2,4}$/; return re.test(name); }
+
+    window.bookClassroom = async function(classroom,timeSlot){
+      try {
+        const userNameEl = document.getElementById('userName'); const userName = userNameEl.value.trim(); const password = document.getElementById('userPassword').value.trim(); const nameErrorEl = document.getElementById('nameError'); nameErrorEl.classList.add('hidden'); nameErrorEl.textContent='';
+        if (!userName || !password){ alert('이름과 비밀번호를 입력하세요.'); return; }
+        if (!validateUserNameFormat(userName)) { nameErrorEl.textContent='이름 형식 오류: 숫자1자리 + 한글 2~4글자 (예: 7최별무리)'; nameErrorEl.classList.remove('hidden'); userNameEl.focus(); return; }
+        if (!selectedDate) return;
+        if (!canAttemptBookingFor(selectedDate,classroom,timeSlot)){ alert('이 시간대는 신청 불가합니다.'); return; }
+        const dateKey = getDateKey(selectedDate);
+
+        const snapshot = await get(ref(database,'bookings')); const currentBookings = snapshot.val() || {};
+        const dayOfWeek = getDayOfWeek(selectedDate);
+        let alreadyBooked = [];
+        for (let room of classrooms) {
+          for (let slot of timeSlots) {
+            const ck = `${dateKey}-${room}-${slot}`;
+            let list = currentBookings[ck] || [];
+            if (!Array.isArray(list)) list = Object.values(list).filter(b => b && b.name);
+            else list = list.filter(b => b && b.name);
+            if (list.some(b => b.name === userName)) alreadyBooked.push({ slot, room });
+          }
+        }
+
+        if (alreadyBooked.some(b => b.slot === timeSlot)) {
+          alert(`이미 ${alreadyBooked.find(b => b.slot === timeSlot).slot}에 ${alreadyBooked.find(b => b.slot === timeSlot).room}을 신청했습니다.\n같은 시간대의 다른 강의실은 중복 신청할 수 없습니다.`);
+          return;
+        }
+
+        const chk = allowBookingFor(userName, selectedDate, classroom, timeSlot);
+        if (!chk.allowed){ alert(chk.reason || '신청 불가'); return; }
+
+        const key = `${dateKey}-${classroom}-${timeSlot}`; let bookingList = currentBookings[key] || []; if (!Array.isArray(bookingList)) bookingList = Object.values(bookingList).filter(b=>b&&b.name); else bookingList = bookingList.filter(b=>b&&b.name);
+        bookingList.push({ name:userName, password:password, timestamp:new Date().toISOString() }); currentBookings[key] = bookingList; await saveToFirebase('bookings', currentBookings);
+        alert('신청이 완료되었습니다.'); document.getElementById('userName').value=''; document.getElementById('userPassword').value=''; document.getElementById('nameError').classList.add('hidden');
+      } catch(e){ console.error('bookClassroom 예외:', e); alert('신청 중 오류가 발생했습니다.'); }
+    };
+
+    window.deleteClassroom = async function(index){ try {
+      if (!confirm(`${classrooms[index]}을 삭제하시겠습니까?`)) return; const classroom = classrooms[index]; classrooms.splice(index,1); Object.keys(bookings).forEach(k=>{ if (k.includes(`-${classroom}-`)) delete bookings[k]; }); await saveToFirebase('classrooms',classrooms); await saveToFirebase('bookings',bookings); alert('강의실이 삭제되었습니다.'); renderCalendar(); renderClassroomList();
+    } catch(e){ console.error('deleteClassroom 예외:', e); alert('삭제 중 오류가 발생했습니다.'); } }
+
+    window.removeAllowedDate = async function(dateKey){ try {
+      allowedDates.delete(dateKey); await saveToFirebase('allowedDates', Array.from(allowedDates)); renderAllowedDatesList(); renderCalendar();
+    } catch(e){ console.error('removeAllowedDate 예외:', e); } }
+
+    window.deleteScheduleNote = async function(key){ try {
+      if (!confirm('이 특이사항을 삭제하시겠습니까?')) return; delete scheduleNotes[key]; await saveToFirebase('scheduleNotes', scheduleNotes); alert('삭제되었습니다.'); renderScheduleNotesList();
+    } catch(e){ console.error('deleteScheduleNote 예외:', e); } }
+
+    document.getElementById('adminToggleBtn').addEventListener('click', ()=>{ document.getElementById('adminLoginForm').classList.toggle('hidden'); document.getElementById('userView').classList.toggle('hidden'); });
+    document.getElementById('loginBtn').addEventListener('click', ()=>{ try {
+      if (document.getElementById('adminId').value==='admin' && document.getElementById('adminPassword').value===adminPassword){ isAdminLoggedIn=true; document.getElementById('adminLoginForm').classList.add('hidden'); document.getElementById('adminDashboard').classList.remove('hidden'); document.getElementById('adminToggleBtn').classList.add('hidden'); document.getElementById('logoutBtn').classList.remove('hidden'); document.getElementById('userView').classList.add('hidden'); document.getElementById('regularStart').value=bookingTimes.regularStart; document.getElementById('regularEnd').value=bookingTimes.regularEnd; document.getElementById('eveningStart').value=bookingTimes.eveningStart; document.getElementById('eveningEnd').value=bookingTimes.eveningEnd; renderClassroomList(); renderAllowedDatesList(); updateClassroomSelects(); renderScheduleNotesList(); initializeYearSelect(); renderTodayBookings(); } else alert('아이디 또는 비밀번호가 맞지 않습니다.');
+    } catch(e){ console.error('loginBtn 예외:', e); } });
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ isAdminLoggedIn=false; document.getElementById('adminDashboard').classList.add('hidden'); document.getElementById('adminToggleBtn').classList.remove('hidden'); document.getElementById('logoutBtn').classList.add('hidden'); document.getElementById('userView').classList.remove('hidden'); document.getElementById('adminId').value=''; document.getElementById('adminPassword').value=''; if (selectedDate) safeRender(renderClassrooms); });
+
+    document.getElementById('prevMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()-1); normalizeCurrentDate(); renderCalendar(); });
+    document.getElementById('nextMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); normalizeCurrentDate(); renderCalendar(); });
+
+    document.getElementById('passwordChangeBtn').addEventListener('click', ()=> document.getElementById('passwordChangePanel').classList.toggle('hidden'));
+    document.getElementById('changePasswordBtn').addEventListener('click', async ()=>{ try {
+      const current=document.getElementById('currentPassword').value; const newPass=document.getElementById('newPassword').value; const confirm=document.getElementById('confirmPassword').value; if (current!==adminPassword){ alert('현재 비밀번호가 맞지 않습니다.'); return; } if (newPass.length<4){ alert('새 비밀번호는 4자리 이상이어야 합니다.'); return; } if (newPass!==confirm){ alert('새 비밀번호가 일치하지 않습니다.'); return; } adminPassword=newPass; await saveToFirebase('adminPassword',adminPassword); alert('비밀번호가 변경되었습니다.'); document.getElementById('currentPassword').value=''; document.getElementById('newPassword').value=''; document.getElementById('confirmPassword').value=''; document.getElementById('passwordChangePanel').classList.add('hidden');
+    } catch(e){ console.error('changePasswordBtn 예외:', e); alert('비밀번호 변경 중 오류가 발생했습니다.'); } });
+
+    document.getElementById('dateManagerBtn').addEventListener('click', ()=> document.getElementById('dateManagerPanel').classList.toggle('hidden'));
+    document.getElementById('addDateBtn').addEventListener('click', async ()=>{ try {
+      const dateValue=document.getElementById('tempDate').value; if (!dateValue){ alert('날짜를 선택하세요.'); return; } if (allowedDates.has(dateValue)){ allowedDates.delete(dateValue); alert('날짜가 제거되었습니다.'); } else { allowedDates.add(dateValue); alert('날짜가 추가되었습니다.'); } await saveToFirebase('allowedDates', Array.from(allowedDates)); renderAllowedDatesList(); renderCalendar();
+    } catch(e){ console.error('addDateBtn 예외:', e); alert('추가 중 오류가 발생했습니다.'); } });
+
+    document.getElementById('timeSettingsBtn').addEventListener('click', ()=> document.getElementById('timeSettingsPanel').classList.toggle('hidden'));
+    document.getElementById('saveTimeSettingsBtn').addEventListener('click', async ()=>{ try {
+      bookingTimes.regularStart=document.getElementById('regularStart').value; bookingTimes.regularEnd=document.getElementById('regularEnd').value; bookingTimes.eveningStart=document.getElementById('eveningStart').value; bookingTimes.eveningEnd=document.getElementById('eveningEnd').value; await saveToFirebase('bookingTimes',bookingTimes); alert('시간 설정이 저장되었습니다.'); document.getElementById('timeSettingsPanel').classList.add('hidden');
+    } catch(e){ console.error('saveTimeSettingsBtn 예외:', e); alert('저장 중 오류가 발생했습니다.'); } });
+
+    document.getElementById('addClassroomBtn').addEventListener('click', ()=> document.getElementById('addClassroomPanel').classList.toggle('hidden'));
+    document.getElementById('addClassroomConfirmBtn').addEventListener('click', async ()=>{ try {
+      const newName=document.getElementById('newClassroomName').value.trim(); if (!newName){ alert('강의실 이름을 입력하세요.'); return; } if (classrooms.includes(newName)){ alert('이미 존재하는 강의실입니다.'); return; } classrooms.push(newName); await saveToFirebase('classrooms',classrooms); document.getElementById('newClassroomName').value=''; alert('강의실이 추가되었습니다.'); updateClassroomSelects(); renderCalendar();
+    } catch(e){ console.error('addClassroomConfirmBtn 예외:', e); alert('추가 중 오류가 발생했습니다.'); } });
+
+    document.getElementById('scheduleNotesBtn').addEventListener('click', ()=> document.getElementById('scheduleNotesPanel').classList.toggle('hidden'));
+    document.getElementById('saveNoteBtn').addEventListener('click', async ()=>{ try {
+      const day=document.getElementById('noteDay').value; const classroom=document.getElementById('noteClassroom').value; const timeSlot=document.getElementById('noteTimeSlot').value; const content=document.getElementById('noteContent').value.trim(); if (!day || !classroom || !timeSlot){ alert('요일, 강의실, 시간을 모두 선택하세요.'); return; } if (!content){ alert('특이사항을 입력하세요.'); return; } const key=`${day}-${classroom}-${timeSlot}`; scheduleNotes[key]=content; await saveToFirebase('scheduleNotes',scheduleNotes); document.getElementById('noteDay').value=''; document.getElementById('noteClassroom').value=''; document.getElementById('noteTimeSlot').value=''; document.getElementById('noteContent').value=''; alert('정기 특이사항이 저장되었습니다.'); renderScheduleNotesList();
+    } catch(e){ console.error('saveNoteBtn 예외:', e); alert('저장 중 오류가 발생했습니다.'); } });
+
+    document.getElementById('historyBtn').addEventListener('click', ()=> { document.getElementById('historyPanel').classList.toggle('hidden'); initializeYearSelect(); });
+    document.getElementById('todayBookingsBtn').addEventListener('click', ()=> { document.getElementById('todayBookingsPanel').classList.toggle('hidden'); renderTodayBookings(); });
+
+    document.getElementById('availabilityBtn').addEventListener('click', ()=> document.getElementById('availabilityPanel').classList.toggle('hidden'));
+    document.getElementById('availabilityDay').addEventListener('change', renderAvailabilityGrid);
+    document.getElementById('loadAvailabilityBtn').addEventListener('click', renderAvailabilityGrid);
+    document.getElementById('saveAvailabilityBtn').addEventListener('click', saveWeeklyAvailabilityFromGrid);
+
+    document.getElementById('historyYear')?.addEventListener('change', ()=>{ const year = document.getElementById('historyYear').value; const month = document.getElementById('historyMonth').value; const daySelect = document.getElementById('historyDay'); daySelect.innerHTML='<option value="">일 선택</option>'; if (!year || !month) return; const daysInMonth = new Date(year, month, 0).getDate(); for (let i=1;i<=daysInMonth;i++){ const opt=document.createElement('option'); opt.value=i; opt.textContent=`${i}일`; daySelect.appendChild(opt); }});
+    document.getElementById('historyMonth')?.addEventListener('change', ()=>{ const year = document.getElementById('historyYear').value; const month = document.getElementById('historyMonth').value; const daySelect = document.getElementById('historyDay'); daySelect.innerHTML='<option value="">일 선택</option>'; if (!year || !month) return; const daysInMonth = new Date(year, month, 0).getDate(); for (let i=1;i<=daysInMonth;i++){ const opt=document.createElement('option'); opt.value=i; opt.textContent=`${i}일`; daySelect.appendChild(opt); }});
+    document.getElementById('viewHistoryBtn').addEventListener('click', ()=> {
+      try {
+        const year = document.getElementById('historyYear').value; const month = document.getElementById('historyMonth').value; const day = document.getElementById('historyDay').value; const container = document.getElementById('historyResultContainer');
+        if (!year || !month || !day){ alert('년,월,일을 모두 선택하세요.'); return; }
+        const dateKey = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const selected = new Date(year, month-1, day); const dow = getDayOfWeek(selected);
+        container.innerHTML = `<h4 class="font-bold text-lg mb-3">${dateKey} (${dow}요일) 기록</h4>`; let has=false;
+        classrooms.forEach(classroom=>{ let roomHtml=`<div class="bg-white border rounded-lg p-4 mb-3"><h5 class="font-bold mb-3">${classroom}</h5>`; let roomHas=false;
+          timeSlots.forEach(ts=>{ const key=`${dateKey}-${classroom}-${ts}`; let list = bookings[key]||[]; if (!Array.isArray(list)) list = Object.values(list).filter(b=>b&&b.name); else list = list.filter(b=>b&&b.name);
+            const note = scheduleNotes[`${dow}-${classroom}-${ts}`]||''; if (list.length>0 || note){ roomHas=true; has=true; roomHtml += `<div class="mb-3 pb-3 border-b"><div class="flex justify-between items-center mb-2"><span class="text-sm font-medium">${ts}</span><span class="text-xs bg-gray-100 px-2 py-1 rounded">${list.length}명</span></div>`; if (note) roomHtml += `<div class="mb-2 text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded">📌 ${note}</div>`; if (list.length>0){ roomHtml += `<div class="space-y-1">`; list.forEach(b=>{ const time = new Date(b.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}); roomHtml += `<div class="bg-gray-50 p-2 rounded text-sm"><span class="font-medium">${b.name}</span><span class="text-gray-500 text-xs ml-2">${time}</span></div>`; }); roomHtml += `</div>`; } else roomHtml += `<div class="text-xs text-gray-400 text-center py-1">신청자 없음</div>`; roomHtml += `</div>`; }
+          });
+          roomHtml += `</div>`; if (roomHas) container.innerHTML += roomHtml;
+        });
+        if (!has) container.innerHTML += `<div class="text-center text-gray-500 py-8">해당 날짜에 신청 기록이 없습니다.</div>`;
+      } catch(e){ console.error('viewHistoryBtn 예외:', e); alert('조회 중 오류가 발생했습니다.'); }
+    });
+
+    document.getElementById('userName').addEventListener('input', ()=>{ const e=document.getElementById('nameError'); e.classList.add('hidden'); e.textContent=''; if (selectedDate) safeRender(renderClassrooms); });
+
+    async function _ensureLoadedAndRender() {
+      try {
+        await loadFromFirebase();
+        setupFirebaseListeners();
+        normalizeCurrentDate();
+        if (!selectedDate) selectedDate = new Date();
+        safeRender(renderCalendar);
+        safeRender(renderClassrooms);
+        safeRender(renderClassroomList);
+        safeRender(renderAllowedDatesList);
+        safeRender(renderScheduleNotesList);
+        safeRender(renderTodayBookings);
+      } catch (err) {
+        console.error('초기화 중 오류 발생:', err);
+        try { alert('초기화 중 오류가 발생했습니다. 콘솔을 확인하세요.'); } catch(e){}
+      }
+    }
+    async function init(){ try { await _ensureLoadedAndRender(); } catch(e){ console.error('init 예외:', e); } }
+    init();
+
+  </script>
+</body>
+</html>
